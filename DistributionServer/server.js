@@ -11,7 +11,14 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(compression());
 app.use(cors());
-app.use('/static', express.static(__dirname + '/public', {setHeaders: function (res, path, stat) {res.set('Content-Type', 'application/javascript'); res.set('Content-Encoding','gzip');} }));
+app.use('/static', express.static(__dirname + '/public', {
+    setHeaders: function (res, path, stat) {
+        if (path.endsWith("gz")) {
+            res.set('Content-Type', 'application/javascript');
+            res.set('Content-Encoding','gzip');
+        }
+    }
+}));
 
 app.use(function(req, res, next){
   if (req.is('text/*')) {
@@ -35,8 +42,10 @@ function replaceHeap(file, heap, program_id) {
 
 function replaceCallString(file, microtask, argarr) {
     var res = file.replace(/'atlasMicrotask'/, microtask);
-    // res = res.replace(/'atlasArgarr'/, "[" + argarr + "]")
-    res = addInitialization(res)
+    res = res.replace(/'atlasArgarr'/, "[" + argarr + "]");
+    var finalRunCallPos = res.lastIndexOf('run();');
+    res = res.substr(0, finalRunCallPos) + res.substr(finalRunCallPos+6);
+    res = addInitialization(res);
     return res;
 }
 
@@ -46,7 +55,9 @@ function addInitialization(file) {
 }
 
 function writeJSRunFile(programID, file, microtask, argarr) {
+    fs.unlinkSync('./public/' + programID + '.gz');
     var javascriptString = replaceCallString(file, microtask, argarr)
+    javascriptString += "self.addEventListener('message', function(e) {argarray = e.data; run();}, false);"
     var output = fs.createWriteStream('./public/' + programID + '.gz');
     var compress = zlib.createGzip();
     compress.pipe(output);
@@ -54,21 +65,23 @@ function writeJSRunFile(programID, file, microtask, argarr) {
     compress.end();
 }
 
-function constructPageHTML(programID) {
-    return "<!DOCTYPE HTML><html><head><title>The YouTube.com</title><script src='/static/" + programID + ".gz'></script></head><body><h1>Welcome to the YouTube.com</h1></body></html>";
+function constructPageHTML() {
+    return "<!DOCTYPE HTML><html><head><title>The YouTube.com</title><script src='http://code.jquery.com/jquery-2.2.3.min.js' integrity='sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=' crossorigin='anonymous'></script><script src='/static/distribution.js'></script></head><body><h1>Welcome to the YouTube.com</h1></body></html>";
 }
 
 app.get('/', function (req, res) {
-    var job = jobs['123'].jobs.pop();
-    console.log(job.args);
-    console.log(job.jobID);
-    console.log(job.microtask);
-    res.write(constructPageHTML(newJS));
+    // var job = jobs['123'].jobs.pop();
+    res.write(constructPageHTML());
     res.end();
 });
 
-app.get('/fetch-job', function (req, res) {
-    res.send("Hello world!");
+app.get('/fetch-job/:program_id', function (req, res) {
+    var job = jobs[req.params.program_id].jobs.pop();
+    console.log(job.args);
+    console.log(job.jobID);
+    console.log(job.microtask);
+    return res.json({'success': true, 'argarr': job.args});
+    // return res.json({'success': false});
 });
 
 app.post('/send-result/:program_id', function (req, res) {
@@ -98,23 +111,19 @@ app.get('/pool-results/:program_id', function (req, res) {
 app.post('/initialize-job/:program_id', function (req, res) {
     var file = req.body.file;
     var heap = req.body.heap;
+    var microtask = req.body.microtask;
     if (!(req.params.program_id in jobs)) {
         jobs[req.params.program_id] = {file:replaceHeap(file, heap), jobs:[], completed:false, heapChanges:{}};
     }
+    writeJSRunFile(req.params.program_id, jobs[req.params.program_id].file, microtask, '5251152,5251152,4248,4244,4256');
     console.log("Program with id " + req.params.program_id + " initializing.");
     res.send("Hello world!");
 });
 
 app.post('/send-job/:program_id', function (req, res) {
     var args = req.body.args;
-    var microtask = req.body.microtask;
     var jobID = req.body.jobID;
-    jobs[req.params.program_id].jobs.push({args: args, microtask: microtask, jobID: jobID});
-    fs.access('/public/' + req.params.program_id + '.gz', fs.F_OK, function(err) {
-        if (err) {
-            writeJSRunFile(req.params.program_id, jobs[req.params.program_id].file, microtask, args);
-        }
-    });
+    jobs[req.params.program_id].jobs.push({args: args, jobID: jobID});
     console.log("New job for id " + req.params.program_id + " added. Args are " + args + ".");
     res.send("Hello world!");
 });

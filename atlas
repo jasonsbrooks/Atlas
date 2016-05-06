@@ -1,0 +1,80 @@
+#!/usr/bin/python2
+
+import argparse
+import os
+from os.path import join, dirname, basename, exists
+import subprocess
+import shutil
+
+
+COMPILER = "emcc"
+CC_OPTS = "-O3 -fopenmp"
+FLAGS = []
+
+def setFlags(args,LIB_FILE):
+    global LIB_FILES
+    if args.serial:
+        LOCAL_FLAGS = CC_OPTS +  " --js-library " + basename(LIB_FILE) + " --memory-init-file 0"
+        FLAGS.append((LOCAL_FLAGS,"_local.js"))
+        LIB_FILES = [LIB_FILE]
+    else:
+        SERVER_FLAGS = CC_OPTS + " --js-library " + basename(LIB_FILE) + " --memory-init-file 0"
+        FLAGS.append((SERVER_FLAGS,"_server.js"))
+        CLIENT_FLAGS = CC_OPTS + " --js-library " + basename(LIB_FILE) + " --memory-init-file 0 --pre-js preAdd.js"
+        FLAGS.append((CLIENT_FLAGS,"_client.js"))
+        LIB_FILES = [LIB_FILE, "lib/preAdd.js"]
+
+
+parser = argparse.ArgumentParser(description = "Distributed OpenMP runtime for Emscripten")
+parser.add_argument('--serial', action='store_true', help='execute serially (no distribution)')
+parser.add_argument('--jobs', default=10, help="number of jobs (if specified in C file)")
+parser.add_argument('-o', metavar="output", help='output basename', required=True)
+parser.add_argument('files', metavar='source files', type = str, nargs='*', help='all C source files that need to be compiled, along with compiler flags')
+
+args = parser.parse_args()
+
+if args.serial:
+    LIB_FILE = "lib/libSerial.js"
+else:
+    LIB_FILE = "lib/lib.js"
+
+setFlags(args,LIB_FILE)
+
+CURDIR = os.getcwd()
+WORKDIR = join(CURDIR,"tmp")
+try:
+    os.mkdir(WORKDIR)
+except:
+    shutil.rmtree(WORKDIR)
+    os.mkdir(WORKDIR)
+
+for f in args.files:
+    shutil.copy(join(CURDIR,f), WORKDIR)
+
+for f in LIB_FILES:
+    shutil.copy(join(CURDIR,f), WORKDIR)
+
+os.chdir(WORKDIR)
+with open(basename(LIB_FILE),'r+') as f:
+    libtxt = f.read()
+    subtxt = libtxt.replace("ATLAS_NUM_THREADS",str(args.jobs))
+    f.seek(0)
+    f.write(subtxt)
+    f.truncate()
+
+
+if not exists(join(WORKDIR,dirname(args.o))):
+    os.makedirs(join(WORKDIR,dirname(args.o)))
+
+
+for flag in FLAGS:
+    subprocess.call([COMPILER] + map(basename,args.files)+flag[0].split()+["-o",args.o+flag[1]])
+
+for flag in FLAGS:
+    OUTPUT_DIR = join(CURDIR,dirname(args.o))
+    if not exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+    shutil.copy(join(WORKDIR,args.o+flag[1]),OUTPUT_DIR)
+
+os.chdir(CURDIR)
+shutil.rmtree(WORKDIR)

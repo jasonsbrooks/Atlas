@@ -1,5 +1,6 @@
 *.mem
 *.swp
 tmp
+bin
 /DistributionServer/public/*.gz
 

@@ -7,16 +7,28 @@ $(document).ready(function() {
 		$('body').append(e.data);
 		console.log("message received from worker");
 		makeCorsRequest(e.data);
+		// runJobCycle();
 	}
+	runJobCycle(runnerWorker);
+});
+
+function runJobCycle(runnerWorker) {
 	$.get("http://137.135.81.12:8080/fetch-job/123", function(data) {
 		if (data.success == false) {
 			return;
 		} else {
-			// console.log(data.argarr);
+			var uuid = data.uuid;
+			window.setInterval(function() {
+				$.get("http://137.135.81.12:8080/heartbeat/" + uuid, function(data) {
+					console.log(data);
+				});
+			}, 5000);
 			runnerWorker.postMessage(data.argarr);
 		}
-	})
-});
+	});
+}
+
+
 
 // Create the XHR object.
 function createCORSRequest(method, url) {

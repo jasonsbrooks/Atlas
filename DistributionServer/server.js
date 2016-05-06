@@ -20,6 +20,16 @@ app.use('/static', express.static(__dirname + '/public', {
     }
 }));
 
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
+
 app.use(function(req, res, next){
   if (req.is('text/*')) {
     req.text = '';
@@ -32,6 +42,7 @@ app.use(function(req, res, next){
 });
 
 var jobs = {};
+var inProgress = {}
 // var i = 0;
 var counter = 0;
 
@@ -77,11 +88,21 @@ app.get('/', function (req, res) {
 
 app.get('/fetch-job/:program_id', function (req, res) {
     var job = jobs[req.params.program_id].jobs.pop();
+    var uuid = guid();
+    inProgress[uuid] = {'jobs': [job], 'lastSeen': new Date().getTime() / 1000};
     console.log(job.args);
     console.log(job.jobID);
     console.log(job.microtask);
-    return res.json({'success': true, 'argarr': job.args});
+    console.log(inProgress);
+    return res.json({'uuid': uuid, 'success': true, 'argarr': job.args});
     // return res.json({'success': false});
+});
+
+app.get('/heartbeat/:uuid', function (req, res) {
+    console.log(req.params.uuid);
+    inProgress[req.params.uuid].lastSeen = new Date().getTime() / 1000;
+    console.log(inProgress);
+    res.send("hello world!");
 });
 
 app.post('/send-result/:program_id', function (req, res) {
@@ -130,4 +151,14 @@ app.post('/send-job/:program_id', function (req, res) {
 
 app.listen(8080, function() {
     console.log("Application listening on port 8080.");
+    setInterval(function(){ 
+        for (var uuid in inProgress) {
+            if (((new Date().getTime() / 1000) - inProgress[uuid].lastSeen) > 7) {
+                console.log("REAPING UUID " + uuid);
+                jobs['123'].jobs.push(inProgress[uuid].jobs[0]);
+                delete inProgress[uuid];
+                console.log(jobs['123'].jobs.length);
+            }
+        } 
+    }, 3000);
 });

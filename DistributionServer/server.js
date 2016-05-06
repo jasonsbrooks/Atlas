@@ -51,9 +51,9 @@ function replaceHeap(file, heap, program_id) {
     return res;
 }
 
-function replaceCallString(file, microtask, argarr) {
+function replaceCallString(file, microtask) {
     var res = file.replace(/'atlasMicrotask'/, microtask);
-    res = res.replace(/'atlasArgarr'/, "[" + argarr + "]");
+    //res = res.replace(/'atlasArgarr'/, "[" + argarr + "]");
     var finalRunCallPos = res.lastIndexOf('run();');
     res = res.substr(0, finalRunCallPos) + res.substr(finalRunCallPos+6);
     res = addInitialization(res);
@@ -65,10 +65,10 @@ function addInitialization(file) {
     return res;
 }
 
-function writeJSRunFile(programID, file, microtask, argarr) {
+function writeJSRunFile(programID, file, microtask) {
     fs.unlinkSync('./public/' + programID + '.gz');
-    var javascriptString = replaceCallString(file, microtask, argarr)
-    javascriptString += "self.addEventListener('message', function(e) {argarray = e.data; run();}, false);"
+    var javascriptString = replaceCallString(file, microtask)
+    javascriptString += "self.addEventListener('message', function(e) {Module.print('WE GOT IT');argarray = e.data; copyHeap();}, false);"
     var output = fs.createWriteStream('./public/' + programID + '.gz');
     var compress = zlib.createGzip();
     compress.pipe(output);
@@ -87,25 +87,28 @@ app.get('/', function (req, res) {
 });
 
 app.get('/fetch-job/:program_id', function (req, res) {
+    console.log("Jobs remaining: "+JSON.stringify(jobs[req.params.program_id].jobs));
+    if (jobs[req.params.program_id].jobs.length == 0) return res.json({'success':false});
     var job = jobs[req.params.program_id].jobs.pop();
     var uuid = guid();
     inProgress[uuid] = {'jobs': [job], 'lastSeen': new Date().getTime() / 1000};
-    console.log(job.args);
-    console.log(job.jobID);
-    console.log(job.microtask);
-    console.log(inProgress);
+    //console.log(job.args);
+    //console.log(job.jobID);
+    //console.log(job.microtask);
+    console.log("inProgress: "+JSON.stringify(inProgress));
     return res.json({'uuid': uuid, 'success': true, 'argarr': job.args});
     // return res.json({'success': false});
 });
 
 app.get('/heartbeat/:uuid', function (req, res) {
     console.log(req.params.uuid);
-    inProgress[req.params.uuid].lastSeen = new Date().getTime() / 1000;
-    console.log(inProgress);
+    if (inProgress.hasOwnProperty(req.params.uuid))
+      inProgress[req.params.uuid].lastSeen = new Date().getTime() / 1000;
+    //console.log(inProgress);
     res.send("hello world!");
 });
 
-app.post('/send-result/:program_id', function (req, res) {
+app.post('/send-result/:program_id/:uuid', function (req, res) {
     console.log("Getting result for job for program with id " + req.params.program_id + ".");
     counter = counter + 1;
     var heapChanges = JSON.parse(req.text);
@@ -115,6 +118,7 @@ app.post('/send-result/:program_id', function (req, res) {
     if (counter == 10) {
         jobs[req.params.program_id].completed = true;
     }
+    delete inProgress[req.params.uuid];
     res.send("Hello world!");
 });
 
@@ -136,7 +140,7 @@ app.post('/initialize-job/:program_id', function (req, res) {
     if (!(req.params.program_id in jobs)) {
         jobs[req.params.program_id] = {file:replaceHeap(file, heap), jobs:[], completed:false, heapChanges:{}};
     }
-    writeJSRunFile(req.params.program_id, jobs[req.params.program_id].file, microtask, '5251152,5251152,4248,4244,4256');
+    writeJSRunFile(req.params.program_id, jobs[req.params.program_id].file, microtask);
     console.log("Program with id " + req.params.program_id + " initializing.");
     res.send("Hello world!");
 });
@@ -151,14 +155,17 @@ app.post('/send-job/:program_id', function (req, res) {
 
 app.listen(8080, function() {
     console.log("Application listening on port 8080.");
-    setInterval(function(){ 
+    setInterval(function(){
         for (var uuid in inProgress) {
             if (((new Date().getTime() / 1000) - inProgress[uuid].lastSeen) > 7) {
                 console.log("REAPING UUID " + uuid);
-                jobs['123'].jobs.push(inProgress[uuid].jobs[0]);
+                for (var i = 0; i < inProgress[uuid].jobs.length; i++) {
+                  console.log("JOB READD: "+ JSON.stringify(inProgress[uuid].jobs[i]));
+                  jobs['123'].jobs.push(inProgress[uuid].jobs[i]);
+                }
                 delete inProgress[uuid];
                 console.log(jobs['123'].jobs.length);
             }
-        } 
+        }
     }, 3000);
 });

@@ -1,31 +1,34 @@
 $(document).ready(function() {
-	var runnerWorker = new Worker("/static/123.gz");
-	runnerWorker.onmessage = function(e) {
-		// result.textContent = e.data;
-		console.log(e.data);
-		$('body').append("<h2>Finished job.</h2>");
-		$('body').append(e.data);
-		console.log("message received from worker");
-		makeCorsRequest(e.data);
-		// runJobCycle();
-	}
-	runJobCycle(runnerWorker);
+    var runnerWorker = new Worker("/static/123.gz");
+    runnerWorker.onmessage = function(e) {
+        // result.textContent = e.data;
+        console.log(e.data);
+        $('body').append("<h2>Finished job.</h2>");
+        $('body').append(e.data);
+        console.log("message received from worker");
+        makeCorsRequest(e.data);
+        runJobCycle(runnerWorker);
+    }
+    runJobCycle(runnerWorker);
 });
+var uuid;
+var heartbeat;
 
 function runJobCycle(runnerWorker) {
-	$.get("http://137.135.81.12:8080/fetch-job/123", function(data) {
-		if (data.success == false) {
-			return;
-		} else {
-			var uuid = data.uuid;
-			window.setInterval(function() {
-				$.get("http://137.135.81.12:8080/heartbeat/" + uuid, function(data) {
-					console.log(data);
-				});
-			}, 5000);
-			runnerWorker.postMessage(data.argarr);
-		}
-	});
+    $.get("http://137.135.81.12:8080/fetch-job/123", function(data) {
+        if (data.success == false) {
+            clearInterval(heartbeat);
+            return;
+        } else {
+            uuid = data.uuid;
+            heartbeat = window.setInterval(function() {
+                $.get("http://137.135.81.12:8080/heartbeat/" + uuid, function(data) {
+                    console.log(data);
+                });
+            }, 5000);
+            runnerWorker.postMessage(data.argarr);
+        }
+    });
 }
 
 
@@ -51,7 +54,7 @@ function createCORSRequest(method, url) {
 // Make the actual CORS request.
 function makeCorsRequest(heap) {
   // All HTML5 Rocks properties support CORS.
-  var url = 'http://137.135.81.12:8080/send-result/123';
+  var url = 'http://137.135.81.12:8080/send-result/123/'+uuid;
 
   var xhr = createCORSRequest('POST', url);
   if (!xhr) {

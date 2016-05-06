@@ -8,7 +8,7 @@ import shutil
 
 
 COMPILER = "emcc"
-CC_OPTS = "-O3 -fopenmp"
+CC_OPTS = "-O1 -fopenmp"
 FLAGS = []
 
 def setFlags(args,LIB_FILE):
@@ -57,7 +57,8 @@ for f in LIB_FILES:
 os.chdir(WORKDIR)
 with open(basename(LIB_FILE),'r+') as f:
     libtxt = f.read()
-    subtxt = libtxt.replace("ATLAS_NUM_THREADS",str(args.jobs))
+    subtxt = libtxt.replace("ATLAS_NUM_THREADS",str(args.jobs)).replace(
+        "ATLAS_BASENAME",basename(args.o))
     f.seek(0)
     f.write(subtxt)
     f.truncate()

@@ -1,40 +1,49 @@
 $(document).ready(function() {
-  var runnerWorker;
-  $.get("http://137.135.81.12:8080/current-task", function(data) {
-      taskid = data;
-      console.log("got new task: " + data);
-      runnerWorker = new Worker("/static/tasks/"+taskid+".gz");
-      runnerWorker.onmessage = function(e) {
-          // result.textContent = e.data;
-          console.log(e.data);
-          $('body').append("<h2>Finished job.</h2>");
-          $('body').append(e.data);
-          console.log("message received from worker");
-          makeCorsRequest(e.data);
-          runJobCycle(runnerWorker);
-      }
-      runJobCycle(runnerWorker);
-  });
+  heartbeat = window.setInterval(pollTask, 5000);
 });
 var taskid;
 var uuid;
 var heartbeat;
 
+function pollTask() {
+  $.get("http://137.135.81.12:8080/current-task", function(data) {
+    if (data != "no tasks") {
+      clearInterval(heartbeat);
+      taskid = data;
+      console.log("got new task: " + data);
+      var runnerWorker = new Worker("/static/tasks/"+taskid+".gz");
+      runnerWorker.onmessage = function(e) {
+        // result.textContent = e.data;
+        console.log(e.data);
+        $('body').append("<h2>Finished job.</h2>");
+        $('body').append(e.data);
+        console.log("message received from worker");
+        makeCorsRequest(e.data);
+        runJobCycle(runnerWorker);
+      }
+      runJobCycle(runnerWorker);
+    }
+  });
+
+
+}
+
 function runJobCycle(runnerWorker) {
-    $.get("http://137.135.81.12:8080/fetch-job/"+taskid, function(data) {
-        if (data.success == false) {
-            clearInterval(heartbeat);
-            return;
-        } else {
-            uuid = data.uuid;
-            heartbeat = window.setInterval(function() {
-                $.get("http://137.135.81.12:8080/heartbeat/"+taskid +'/'+uuid, function(data) {
-                    console.log(data);
-                });
-            }, 5000);
-            runnerWorker.postMessage(data.argarr);
-        }
-    });
+  $.get("http://137.135.81.12:8080/fetch-job/"+taskid, function(data) {
+    if (data.success == false) {
+      clearInterval(heartbeat);
+      heartbeat = window.setInterval(pollTask, 5000);
+      return;
+    } else {
+      uuid = data.uuid;
+      heartbeat = window.setInterval(function() {
+        $.get("http://137.135.81.12:8080/heartbeat/"+taskid +'/'+uuid, function(data) {
+          console.log(data);
+        });
+      }, 5000);
+      runnerWorker.postMessage(data.argarr);
+    }
+  });
 }
 
 

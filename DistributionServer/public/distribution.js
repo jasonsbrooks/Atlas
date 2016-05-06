@@ -1,28 +1,34 @@
 $(document).ready(function() {
-    var runnerWorker = new Worker("/static/123.gz");
-    runnerWorker.onmessage = function(e) {
-        // result.textContent = e.data;
-        console.log(e.data);
-        $('body').append("<h2>Finished job.</h2>");
-        $('body').append(e.data);
-        console.log("message received from worker");
-        makeCorsRequest(e.data);
-        runJobCycle(runnerWorker);
-    }
-    runJobCycle(runnerWorker);
+  var runnerWorker;
+  $.get("http://137.135.81.12:8080/current-task", function(data) {
+      taskid = data;
+      console.log("got new task: " + data);
+      runnerWorker = new Worker("/static/tasks/"+taskid+".gz");
+      runnerWorker.onmessage = function(e) {
+          // result.textContent = e.data;
+          console.log(e.data);
+          $('body').append("<h2>Finished job.</h2>");
+          $('body').append(e.data);
+          console.log("message received from worker");
+          makeCorsRequest(e.data);
+          runJobCycle(runnerWorker);
+      }
+      runJobCycle(runnerWorker);
+  });
 });
+var taskid;
 var uuid;
 var heartbeat;
 
 function runJobCycle(runnerWorker) {
-    $.get("http://137.135.81.12:8080/fetch-job/123", function(data) {
+    $.get("http://137.135.81.12:8080/fetch-job/"+taskid, function(data) {
         if (data.success == false) {
             clearInterval(heartbeat);
             return;
         } else {
             uuid = data.uuid;
             heartbeat = window.setInterval(function() {
-                $.get("http://137.135.81.12:8080/heartbeat/" + uuid, function(data) {
+                $.get("http://137.135.81.12:8080/heartbeat/"+taskid +'/'+uuid, function(data) {
                     console.log(data);
                 });
             }, 5000);
@@ -54,7 +60,7 @@ function createCORSRequest(method, url) {
 // Make the actual CORS request.
 function makeCorsRequest(heap) {
   // All HTML5 Rocks properties support CORS.
-  var url = 'http://137.135.81.12:8080/send-result/123/'+uuid;
+  var url = 'http://137.135.81.12:8080/send-result/'+taskid+'/'+uuid;
 
   var xhr = createCORSRequest('POST', url);
   if (!xhr) {

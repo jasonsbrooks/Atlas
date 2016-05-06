@@ -8,7 +8,7 @@ import shutil
 
 
 COMPILER = "emcc"
-CC_OPTS = "-O1 -fopenmp"
+CC_OPTS = "-O3 -fopenmp"
 FLAGS = []
 
 def setFlags(args,LIB_FILE):

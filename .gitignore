@@ -2,5 +2,6 @@
 *.swp
 tmp
 bin
-/DistributionServer/public/*.gz
+/DistributionServer/public/tasks/*.gz
+
 

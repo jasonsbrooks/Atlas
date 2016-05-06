@@ -45,14 +45,14 @@ var jobs = {};
 // var i = 0;
 
 function replaceHeap(file, heap, program_id) {
-  var res = file.replace(/'atlasHeapReplace'/, "[" + heap + "]");
+  var res = file.replace(/"atlasHeapReplace"/, "[" + heap + "]");
   return res;
 }
 
 function replaceCallString(file, microtask) {
-  var res = file.replace(/'atlasMicrotask'/, microtask);
+  var res = file.replace(/"atlasMicrotask"/, microtask);
   //res = res.replace(/'atlasArgarr'/, "[" + argarr + "]");
-  var finalRunCallPos = res.lastIndexOf('run();');
+  var finalRunCallPos = res.lastIndexOf('run()');
   res = res.substr(0, finalRunCallPos) + res.substr(finalRunCallPos+6);
   res = addInitialization(res);
   return res;
@@ -164,15 +164,14 @@ app.listen(8080, function() {
   console.log("Application listening on port 8080.");
   setInterval(function(){
     for (var task in jobs) {
-      for (var uuid in task.inProgress) {
-        if (((new Date().getTime() / 1000) - task.inProgress[uuid].lastSeen) > 7) {
+      for (var uuid in jobs[task].inProgress) {
+        if (((new Date().getTime() / 1000) - jobs[task].inProgress[uuid].lastSeen) > 7) {
           console.log("REAPING UUID " + uuid);
-          for (var i = 0; i < task.inProgress[uuid].jobs.length; i++) {
-            console.log("JOB READD: "+ JSON.stringify(task.inProgress[uuid].jobs[i]));
-            jobs['123'].jobs.push(task.inProgress[uuid].jobs[i]);
+          for (var i = 0; i < jobs[task].inProgress[uuid].jobs.length; i++) {
+            console.log("JOB READD: "+ JSON.stringify(jobs[task].inProgress[uuid].jobs[i]));
+            jobs[task].jobs.push(jobs[task].inProgress[uuid].jobs[i]);
           }
-          delete task.inProgress[uuid];
-          console.log(jobs['123'].jobs.length);
+          delete jobs[task].inProgress[uuid];
         }
       }
     }

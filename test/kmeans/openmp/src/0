@@ -1,0 +1,43 @@
+Internal compiler error in src/compiler.js! Please raise a bug report at https://github.com/kripken/emscripten/issues/ with a log of the build and the input files used to run. Exception message: "Error: ENOENT: no such file or directory, open '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/jan.js'" | Error: ENOENT: no such file or directory, open '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/jan.js'
+    at Error (native)
+    at Object.fs.openSync (fs.js:549:18)
+    at Object.fs.readFileSync (fs.js:397:15)
+    at read (/mnt/newhome/compiler/emscripten/src/compiler.js:57:34)
+    at Object.LibraryManager.load (eval at globalEval (/mnt/newhome/compiler/emscripten/src/compiler.js:105:8), <anonymous>:143:17)
+    at JSify (eval at globalEval (/mnt/newhome/compiler/emscripten/src/compiler.js:105:8), <anonymous>:61:20)
+    at Object.<anonymous> (/mnt/newhome/compiler/emscripten/src/compiler.js:213:3)
+    at Module._compile (module.js:434:26)
+    at Object.Module._extensions..js (module.js:452:10)
+    at Module.load (module.js:355:32)
+Traceback (most recent call last):
+  File "/usr/bin/emcc", line 13, in <module>
+    emcc.run()
+  File "/mnt/newhome/compiler/emscripten/emcc.py", line 1392, in run
+    final = shared.Building.emscripten(final, append_ext=False, extra_args=extra_args)
+  File "/mnt/newhome/compiler/emscripten/tools/shared.py", line 1588, in emscripten
+    call_emscripten(cmdline)
+  File "/mnt/newhome/compiler/emscripten/emscripten.py", line 1657, in _main
+    temp_files.run_and_clean(lambda: main(
+  File "/mnt/newhome/compiler/emscripten/tools/tempfiles.py", line 64, in run_and_clean
+    return func()
+  File "/mnt/newhome/compiler/emscripten/emscripten.py", line 1663, in <lambda>
+    DEBUG_CACHE=DEBUG_CACHE,
+  File "/mnt/newhome/compiler/emscripten/emscripten.py", line 1560, in main
+    temp_files=temp_files, DEBUG=DEBUG, DEBUG_CACHE=DEBUG_CACHE)
+  File "/mnt/newhome/compiler/emscripten/emscripten.py", line 234, in emscript
+    cwd=path_from_root('src'), error_limit=300)
+  File "/mnt/newhome/compiler/emscripten/tools/jsrun.py", line 75, in run_js
+    raise Exception('Expected the command ' + str(command) + ' to finish with return code ' + str(assert_returncode) + ', but it returned with code ' + str(proc.returncode) + ' instead! Output: ' + str(ret)[:error_limit])
+Exception: Expected the command ['/mnt/newhome/compiler/emsdk_portable/node/4.1.1_64bit/bin/node', '/mnt/newhome/compiler/emscripten/src/compiler.js', '/tmp/tmpjjbuZz.txt', '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/jan.js', '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/libSerial.js', '/mnt/newhome/compiler/emscripten/src/library_pthread_stub.js'] to finish with return code 0, but it returned with code 1 instead! Output: // The Module object: Our interface to the outside world. We import
+// and export values on it, and do the work to get that through
+// closure compiler if necessary. There are various ways Module can be used:
+// 1. Not defined. We create it here
+// 2. A function parameter, function(Module) { ..gener
+Traceback (most recent call last):
+  File "/usr/bin/atlas", line 91, in <module>
+    shutil.copy(join(WORKDIR,args.o+flag[1]),OUTPUT_DIR)
+  File "/usr/lib/python2.7/shutil.py", line 119, in copy
+    copyfile(src, dst)
+  File "/usr/lib/python2.7/shutil.py", line 82, in copyfile
+    with open(src, 'rb') as fsrc:
+IOError: [Errno 2] No such file or directory: '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/komp_local.js'

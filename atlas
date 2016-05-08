@@ -2,27 +2,32 @@
 
 import argparse
 import os
-from os.path import join, dirname, basename, exists
+from os.path import join, dirname, basename, exists, abspath
 import subprocess
 import shutil
 
 
 COMPILER = "emcc"
-CC_OPTS = "-O3 -fopenmp"
+#CC_OPTS = "-O1 -fopenmp -s ALLOW_MEMORY_GROWTH=1 --js-library jan.js"
+CC_OPTS = "-O3 -fopenmp -s ALLOW_MEMORY_GROWTH=1"
 FLAGS = []
+LIB_DIR = "/home/atlas/newhome/compiler/atlas/lib/"
+#LIB_FILES = ["jan.js"]
+LIB_FILES = []
+
 
 def setFlags(args,LIB_FILE):
     global LIB_FILES
     if args.serial:
         LOCAL_FLAGS = CC_OPTS +  " --js-library " + basename(LIB_FILE) + " --memory-init-file 0"
         FLAGS.append((LOCAL_FLAGS,"_local.js"))
-        LIB_FILES = [LIB_FILE]
+        LIB_FILES += [LIB_FILE]
     else:
         SERVER_FLAGS = CC_OPTS + " --js-library " + basename(LIB_FILE) + " --memory-init-file 0"
         FLAGS.append((SERVER_FLAGS,"_server.js"))
         CLIENT_FLAGS = CC_OPTS + " --js-library " + basename(LIB_FILE) + " --memory-init-file 0 --pre-js preAdd.js"
         FLAGS.append((CLIENT_FLAGS,"_client.js"))
-        LIB_FILES = [LIB_FILE, "lib/preAdd.js"]
+        LIB_FILES += [LIB_FILE, LIB_DIR+"preAdd.js"]
 
 
 parser = argparse.ArgumentParser(description = "Distributed OpenMP runtime for Emscripten")
@@ -34,9 +39,9 @@ parser.add_argument('files', metavar='source files', type = str, nargs='*', help
 args = parser.parse_args()
 
 if args.serial:
-    LIB_FILE = "lib/libSerial.js"
+    LIB_FILE = "/home/atlas/newhome/compiler/atlas/lib/libSerial.js"
 else:
-    LIB_FILE = "lib/lib.js"
+    LIB_FILE = "/home/atlas/newhome/compiler/atlas/lib/lib.js"
 
 setFlags(args,LIB_FILE)
 
@@ -48,8 +53,19 @@ except:
     shutil.rmtree(WORKDIR)
     os.mkdir(WORKDIR)
 
-for f in args.files:
-    shutil.copy(join(CURDIR,f), WORKDIR)
+FILES = map(abspath, args.files)
+print FILES
+
+print len(FILES)
+for f in list(FILES):
+    deps = subprocess.check_output(["gcc","-MM",f])
+    print deps
+    FILES += map(str.strip,deps.split("\\")[1:])
+
+print FILES
+
+for f in FILES:
+    shutil.copy(f, WORKDIR)
 
 for f in LIB_FILES:
     shutil.copy(join(CURDIR,f), WORKDIR)
@@ -69,7 +85,9 @@ if not exists(join(WORKDIR,dirname(args.o))):
 
 
 for flag in FLAGS:
-    subprocess.call([COMPILER] + map(basename,args.files)+flag[0].split()+["-o",args.o+flag[1]])
+    call_str = [COMPILER] + map(basename,args.files)+flag[0].split()+["-o",args.o+flag[1]]
+    print(' '.join(call_str))
+    subprocess.call(call_str)
 
 for flag in FLAGS:
     OUTPUT_DIR = join(CURDIR,dirname(args.o))

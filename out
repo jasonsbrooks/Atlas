@@ -1,0 +1,43 @@
+DEBUG:root:[35mPYTHON not defined in /home/atlas/.emscripten, using "/usr/bin/python"[0m
+DEBUG:root:[35mJAVA not defined in /home/atlas/.emscripten, using "java"[0m
+WARNING:root:[33minvocation: /usr/bin/emcc spectral.c -lm -O3 -fomit-frame-pointer -march=native -fopenmp -msse2 -ffast-math --js-library libSerial.js --memory-init-file 0 -o bin/spectral_local.js  (in /mnt/newhome/compiler/atlas/tmp)[0m
+INFO:root:[32m(Emscripten: Running sanity checks)[0m
+DEBUG:root:[35mlooking for library "m"[0m
+DEBUG:root:[35mcompiling to bitcode[0m
+DEBUG:root:[35memcc step "parse arguments and setup" took 0.01 seconds[0m
+DEBUG:root:[35mcompiling source file: spectral.c[0m
+DEBUG:root:[35mrunning: /mnt/newhome/compiler/emsdk_portable/clang/fastcomp/build_master_64/bin/clang -target asmjs-unknown-emscripten -D__EMSCRIPTEN_major__=1 -D__EMSCRIPTEN_minor__=36 -D__EMSCRIPTEN_tiny__=0 -Werror=implicit-function-declaration -nostdinc -Xclang -nobuiltininc -Xclang -nostdsysteminc -Xclang -isystem/mnt/newhome/compiler/emscripten/system/local/include -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include/compat -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include/emscripten -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include/libc -Xclang -isystem/mnt/newhome/compiler/emscripten/system/lib/libc/musl/arch/emscripten -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include/libcxx -O3 -fomit-frame-pointer -march=native -fopenmp -ffast-math -mllvm -disable-llvm-optzns -D__SSE__=1 -D__SSE2__=1 spectral.c -Xclang -isystem/mnt/newhome/compiler/emscripten/system/include/SDL -emit-llvm -c -o /tmp/tmp8MGlFq/spectral_0.o[0m
+clang-3.9: warning: argument unused during compilation: '-march=native'
+DEBUG:root:[35memcc step "bitcodeize inputs" took 0.07 seconds[0m
+DEBUG:root:[35moptimizing spectral.c[0m
+DEBUG:root:[35memcc: LLVM opts: -O3 -disable-loop-vectorization -disable-slp-vectorization -vectorize-loops=false -vectorize-slp=false -vectorize-slp-aggressive=false  [num inputs: 1][0m
+DEBUG:root:[35memcc step "process inputs" took 0.08 seconds[0m
+DEBUG:root:[35mwill generate JavaScript[0m
+DEBUG:root:[35mincluding libc.bc[0m
+DEBUG:root:[35mincluding dlmalloc.bc[0m
+DEBUG:root:[35memcc step "calculate system libraries" took 0.01 seconds[0m
+DEBUG:root:[35mlinking: ['/tmp/tmp8MGlFq/spectral_0_1.o', '/home/atlas/.emscripten_cache/libc.bc', '/home/atlas/.emscripten_cache/dlmalloc.bc'][0m
+DEBUG:root:[35memcc step "link" took 0.00 seconds[0m
+DEBUG:root:[35msaving intermediate processing steps to /tmp/emscripten_temp[0m
+DEBUG:root:[35m(not saving intermediate /tmp/emscripten_temp/emcc-0-basebc.bc because deferring linking)[0m
+DEBUG:root:[35memcc: LLVM opts: -strip-debug -disable-verify -internalize -internalize-public-api-list=main,malloc,free,__errno_location,fflush -globaldce -disable-loop-vectorization -disable-slp-vectorization -vectorize-loops=false -vectorize-slp=false -vectorize-slp-aggressive=false  [num inputs: 3][0m
+DEBUG:root:[35memcc step "post-link" took 0.38 seconds[0m
+DEBUG:root:[35mLLVM => JS[0m
+DEBUG:root:[35memscript: llvm backend: /mnt/newhome/compiler/emsdk_portable/clang/fastcomp/build_master_64/bin/llc /tmp/tmp8MGlFq/spectral_local.bc -march=js -filetype=asm -o /tmp/emscripten_temp/tmpO3Ehmd.4.js -O3[0m
+DEBUG:root:[35m  emscript: llvm backend took 0.124001026154 seconds[0m
+DEBUG:root:[35memscript: js compiler glue[0m
+DEBUG:root:[35mvery limited syscalls (6, 146, 54, 140) so disabling full filesystem support[0m
+DEBUG:root:[35m  emscript: glue took 1.24479007721 seconds[0m
+DEBUG:root:[35masm text sizes[[206093, 17062], 802, 159, 1511, 0, 617, 572, 576, 268, 884, 947][0m
+DEBUG:root:[35m  emscript: final python processing took 0.00326490402222 seconds[0m
+DEBUG:root:[35memcc step "emscript (llvm=>js)" took 1.41 seconds[0m
+DEBUG:root:[35memcc step "source transforms" took 0.01 seconds[0m
+DEBUG:root:[35mrunning js post-opts[0m
+DEBUG:root:[35mapplying js optimization passes: asm eliminate simplifyExpressions simplifyIfs registerizeHarder minifyNames asmLastOpts last minifyWhitespace cleanup[0m
+chunkification: num funcs: 61 actual num chunks: 1 chunk size range: 225349 - 225349
+DEBUG:root:[35mjs optimizer using native[0m
+.
+running cleanup on shell code
+DEBUG:root:[35memcc step "js opts" took 2.21 seconds[0m
+DEBUG:root:[35memcc step "final emitting" took 0.00 seconds[0m
+DEBUG:root:[35mtotal time: 4.20 seconds[0m

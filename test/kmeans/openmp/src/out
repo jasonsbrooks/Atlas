@@ -1,0 +1,70 @@
+clang-3.9: warning: argument unused during compilation: '-march=native'
+0  clang-3.9       0x00000000011d6a65 llvm::sys::PrintStackTrace(llvm::raw_ostream&) + 37
+1  clang-3.9       0x00000000011d4c76 llvm::sys::RunSignalHandlers() + 54
+2  clang-3.9       0x00000000011d4e65
+3  libpthread.so.0 0x00007fb5215f0340
+4  clang-3.9       0x000000000250e041 clang::DeclContext::addHiddenDecl(clang::Decl*) + 1
+5  clang-3.9       0x0000000002512679 clang::DeclContext::addDecl(clang::Decl*) + 9
+6  clang-3.9       0x0000000001eeca89 clang::Sema::tryCaptureVariable(clang::VarDecl*, clang::SourceLocation, clang::Sema::TryCaptureKind, clang::SourceLocation, bool, clang::QualType&, clang::QualType&, unsigned int const*) + 6297
+7  clang-3.9       0x0000000001eeda76
+8  clang-3.9       0x0000000001eedd05
+9  clang-3.9       0x0000000001eee3f0 clang::Sema::MarkDeclRefReferenced(clang::DeclRefExpr*) + 80
+10 clang-3.9       0x0000000001ff50c4
+11 clang-3.9       0x0000000001fedee5
+12 clang-3.9       0x0000000001ffae47
+13 clang-3.9       0x0000000001fedeaf
+14 clang-3.9       0x0000000001ffe9a1
+15 clang-3.9       0x00000000020003ee
+16 clang-3.9       0x0000000002003676 clang::Sema::ActOnOpenMPParallelForDirective(llvm::ArrayRef<clang::OMPClause*>, clang::Stmt*, clang::SourceLocation, clang::SourceLocation, llvm::DenseMap<clang::VarDecl*, clang::Expr*, llvm::DenseMapInfo<clang::VarDecl*>, llvm::detail::DenseMapPair<clang::VarDecl*, clang::Expr*> >&) + 438
+17 clang-3.9       0x0000000002004cc1 clang::Sema::ActOnOpenMPExecutableDirective(clang::OpenMPDirectiveKind, clang::DeclarationNameInfo const&, clang::OpenMPDirectiveKind, llvm::ArrayRef<clang::OMPClause*>, clang::Stmt*, clang::SourceLocation, clang::SourceLocation) + 4289
+18 clang-3.9       0x0000000001bf48e7 clang::Parser::ParseOpenMPDeclarativeOrExecutableDirective(clang::Parser::AllowedContsructsKind) + 1127
+19 clang-3.9       0x0000000001c06c39 clang::Parser::ParseStatementOrDeclarationAfterAttributes(llvm::SmallVector<clang::Stmt*, 32u>&, clang::Parser::AllowedContsructsKind, clang::SourceLocation*, clang::Parser::ParsedAttributesWithRange&) + 297
+20 clang-3.9       0x0000000001c07bb4 clang::Parser::ParseStatementOrDeclaration(llvm::SmallVector<clang::Stmt*, 32u>&, clang::Parser::AllowedContsructsKind, clang::SourceLocation*) + 116
+21 clang-3.9       0x0000000001c04819 clang::Parser::ParseCompoundStatementBody(bool) + 1769
+22 clang-3.9       0x0000000001c0c402 clang::Parser::ParseFunctionStatementBody(clang::Decl*, clang::Parser::ParseScope&) + 274
+23 clang-3.9       0x0000000001b89ddd clang::Parser::ParseFunctionDefinition(clang::ParsingDeclarator&, clang::Parser::ParsedTemplateInfo const&, clang::Parser::LateParsedAttrList*) + 1277
+24 clang-3.9       0x0000000001ba8580 clang::Parser::ParseDeclGroup(clang::ParsingDeclSpec&, unsigned int, clang::SourceLocation*, clang::Parser::ForRangeInit*) + 2672
+25 clang-3.9       0x0000000001b85b01 clang::Parser::ParseDeclOrFunctionDefInternal(clang::Parser::ParsedAttributesWithRange&, clang::ParsingDeclSpec&, clang::AccessSpecifier) + 273
+26 clang-3.9       0x0000000001b86181
+27 clang-3.9       0x0000000001b861bf clang::Parser::ParseDeclarationOrFunctionDefinition(clang::Parser::ParsedAttributesWithRange&, clang::ParsingDeclSpec*, clang::AccessSpecifier) + 31
+28 clang-3.9       0x0000000001b8c49f clang::Parser::ParseExternalDeclaration(clang::Parser::ParsedAttributesWithRange&, clang::ParsingDeclSpec*) + 255
+29 clang-3.9       0x0000000001b8cc80 clang::Parser::ParseTopLevelDecl(clang::OpaquePtr<clang::DeclGroupRef>&) + 384
+30 clang-3.9       0x0000000001b8189b clang::ParseAST(clang::Sema&, bool, bool) + 363
+31 clang-3.9       0x00000000015b8e36 clang::FrontendAction::Execute() + 262
+32 clang-3.9       0x00000000015942f6 clang::CompilerInstance::ExecuteAction(clang::FrontendAction&) + 262
+33 clang-3.9       0x000000000163d283 clang::ExecuteCompilerInvocation(clang::CompilerInstance*) + 1923
+34 clang-3.9       0x00000000007ffda8 cc1_main(llvm::ArrayRef<char const*>, char const*, void*) + 2280
+35 clang-3.9       0x00000000007d7429 main + 5929
+36 libc.so.6       0x00007fb520a12ec5 __libc_start_main + 245
+37 clang-3.9       0x00000000007fdbc4
+Stack dump:
+0.	Program arguments: /mnt/newhome/compiler/emsdk_portable/clang/fastcomp/build_master_64/bin/clang-3.9 -cc1 -triple asmjs-unknown-emscripten -emit-llvm-bc -emit-llvm-uselists -disable-free -disable-llvm-verifier -main-file-name kmeans.c -mrelocation-model static -mthread-model posix -menable-no-infs -menable-no-nans -menable-unsafe-fp-math -fno-signed-zeros -freciprocal-math -ffp-contract=fast -ffast-math -no-integrated-as -mconstructor-aliases -dwarf-column-info -debugger-tuning=gdb -coverage-file /tmp/tmpmLFX64/kmeans_0.o -nostdsysteminc -nobuiltininc -resource-dir /mnt/newhome/compiler/emsdk_portable/clang/fastcomp/build_master_64/bin/../lib/clang/3.9.0 -D __EMSCRIPTEN_major__=1 -D __EMSCRIPTEN_minor__=36 -D __EMSCRIPTEN_tiny__=0 -D __SSE__=1 -D __SSE2__=1 -O3 -Werror=implicit-function-declaration -fno-dwarf-directory-asm -fdebug-compilation-dir /mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp -ferror-limit 19 -fmessage-length 0 -fopenmp -fobjc-runtime=gnustep -fdiagnostics-show-option -vectorize-loops -vectorize-slp -nobuiltininc -nostdsysteminc -isystem/mnt/newhome/compiler/emscripten/system/local/include -isystem/mnt/newhome/compiler/emscripten/system/include/compat -isystem/mnt/newhome/compiler/emscripten/system/include -isystem/mnt/newhome/compiler/emscripten/system/include/emscripten -isystem/mnt/newhome/compiler/emscripten/system/include/libc -isystem/mnt/newhome/compiler/emscripten/system/lib/libc/musl/arch/emscripten -isystem/mnt/newhome/compiler/emscripten/system/include/libcxx -isystem/mnt/newhome/compiler/emscripten/system/include/SDL -disable-llvm-optzns -o /tmp/tmpmLFX64/kmeans_0.o -x c kmeans.c 
+1.	kmeans.c:32:1: current parser token '}'
+2.	kmeans.c:11:1: parsing function body 'group_by_cluster'
+3.	kmeans.c:11:1: in compound statement ('{}')
+clang-3.9: error: unable to execute command: Segmentation fault (core dumped)
+clang-3.9: error: clang frontend command failed due to signal (use -v to see invocation)
+clang version 3.9.0 (https://github.com/kripken/emscripten-fastcomp-clang/ 271ce598c3d1fe74efadc254f5be1b57edea9f41) (https://github.com/kripken/emscripten-fastcomp/ 61acfb230665464544f2e8db292f8999fc3c628c) (emscripten 1.36.0 : 1.36.0)
+Target: asmjs-unknown-emscripten
+Thread model: posix
+InstalledDir: /mnt/newhome/compiler/emsdk_portable/clang/fastcomp/build_master_64/bin
+clang-3.9: note: diagnostic msg: PLEASE submit a bug report to http://llvm.org/bugs/ and include the crash backtrace, preprocessed source, and associated run script.
+clang-3.9: note: diagnostic msg: 
+********************
+
+PLEASE ATTACH THE FOLLOWING FILES TO THE BUG REPORT:
+Preprocessed source(s) and associated run script(s) are located at:
+clang-3.9: note: diagnostic msg: /tmp/kmeans-da3b7f.c
+clang-3.9: note: diagnostic msg: /tmp/kmeans-da3b7f.sh
+clang-3.9: note: diagnostic msg: 
+
+********************
+ERROR:root:[31mcompiler frontend failed to generate LLVM bitcode, halting[0m
+Traceback (most recent call last):
+  File "/usr/bin/atlas", line 91, in <module>
+    shutil.copy(join(WORKDIR,args.o+flag[1]),OUTPUT_DIR)
+  File "/usr/lib/python2.7/shutil.py", line 119, in copy
+    copyfile(src, dst)
+  File "/usr/lib/python2.7/shutil.py", line 82, in copyfile
+    with open(src, 'rb') as fsrc:
+IOError: [Errno 2] No such file or directory: '/mnt/newhome/compiler/atlas/test/kmeans/openmp/src/tmp/komp_local.js'

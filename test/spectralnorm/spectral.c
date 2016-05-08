@@ -25,7 +25,7 @@ double dot(double * v, double * u, int n) {
 }
 
 void mult_Av(double * v, double * out, const int n) {
-   int i;
+   unsigned int i;
 
 #pragma omp parallel for
    for (i = 0; i < n; i++) {
@@ -42,7 +42,7 @@ void mult_Av(double * v, double * out, const int n) {
 }
 
 void mult_Atv(double * v, double * out, const int n) {
-   int i;
+   unsigned int i;
 
 #pragma omp parallel for
    for (i = 0; i < n; i++) {

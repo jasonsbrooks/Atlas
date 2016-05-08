@@ -256,7 +256,7 @@ void compute ( int np, int nd, double pos[], double vel[],
 
 
 
-# pragma omp parallel for schedule(static) nowait reduction ( + : pe, ke ) private ( i, j, k, rij, d, d2 )
+# pragma omp parallel for schedule(static) reduction ( + : pe, ke ) private ( i, j, k, rij, d, d2 )
   for ( k = 0; k < np; k++ )
   {
 /*

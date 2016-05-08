@@ -5,10 +5,10 @@
 #define REPOSITORY_SPECIFICATION 0
 // number of executions of the same algorithim
 // its a specification of repository
-#define TIMES 100
+#define TIMES 1
 // its a repository specification.
 // Its a number of iterations of each k-means execution
-#define NUMBER_OF_ITERATIONS 15
+#define NUMBER_OF_ITERATIONS 1
 
 // debug logs
 #define DEBUG_LOGS 1

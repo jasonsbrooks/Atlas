@@ -65,7 +65,7 @@ void mult_AtAv(double *v, double *out, const int n) {
 }
 
 int main(int argc, char**argv) {
-   int n = atoi(argv[1]);
+   int n = 5500;
    if (n <= 0) n = 2000;
    if (n & 1) n++;   // make it multiple of two
 

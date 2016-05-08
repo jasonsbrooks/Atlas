@@ -3,5 +3,5 @@
 tmp
 bin
 /DistributionServer/public/tasks/*.gz
-
-
+*_server.js
+*_client.js

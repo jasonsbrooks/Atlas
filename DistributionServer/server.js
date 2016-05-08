@@ -174,7 +174,7 @@ app.post('/send-result/:program_id/:uuid', function (req, res) {
     return;
   }
   console.log("Getting result for job #" +jobs[req.params.program_id].inProgress[req.params.uuid].jobs[0].jobID+" from uuid " + req.params.uuid + ".");
-  console.log(req.text);
+  //console.log(req.text);
   var heapChanges = JSON.parse(req.text);
   for (key in heapChanges) {
     jobs[req.params.program_id].heapChanges[key] = heapChanges[key];
@@ -243,21 +243,19 @@ app.post('/initialize-mem/:program_id', function(req,res){
 
 
 app.post('/send-job/:program_id', function (req, res) {
+  if (req.params.program_id in jobs) {
+    console.log("New jobs for id " + req.params.program_id + " added.");
+    jobs[req.params.program_id].jobs = req.body.jobs;
+  }
+  else {
+    console.log("VEARLY");
+    earlyjobs[req.params.program_id] = req.body.jobs;
+  }
+  /*
   var args = req.body.args;
   var jobID = req.body.jobID;
   jobj = {args: args, jobID: jobID};
-  if (req.params.program_id in jobs) {
-    console.log("New job for id " + req.params.program_id + " added. Args are " + args + ".");
-    jobs[req.params.program_id].jobs.push(jobj);
-  }
-  else if (req.params.program_id in earlyjobs){
-    console.log("EARLY??");
-    earlyjobs[req.params.program_id].push(jobj);
- }
-  else {
-    console.log("VEARLY");
-    earlyjobs[req.params.program_id] = [jobj];
-}
+ */
   res.send("Hello world!");
 });
 

@@ -29,7 +29,7 @@ function pollTask() {
       initHeap(taskid,runnerWorker);
     }
       clearInterval(heartbeat);
-      heartbeat = window.setInterval(pollTask, 500);
+      heartbeat = window.setInterval(pollTask, 5000);
   });
 
 
@@ -39,7 +39,7 @@ function runJobCycle(runnerWorker) {
   $.get("http://137.135.81.12:8080/fetch-job/"+taskid, function(data) {
     if (data.success == false) {
       clearInterval(heartbeat);
-      heartbeat = window.setInterval(pollTask, 500);
+      heartbeat = window.setInterval(pollTask, 5000);
       return;
     } else {
       console.log("OLD UUID: " + uuid);

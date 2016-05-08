@@ -51,7 +51,7 @@ void mult_AtAv(double *v, double *out, const int n) {
 }
 
 int main(int argc, char**argv) {
-   int n = 6000;
+   int n = 30000;
 
    double *u, *v;
    u = malloc(n * sizeof(double));
@@ -60,7 +60,7 @@ int main(int argc, char**argv) {
 
    int i;
    for (i = 0; i < n; i++) u[i] = 1;
-   for (i = 0; i < 10; i++) {
+   for (i = 0; i < 1; i++) {
       mult_AtAv(u, v, n);
       mult_AtAv(v, u, n);
    }

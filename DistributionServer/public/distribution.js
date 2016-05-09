@@ -6,9 +6,10 @@ var taskbuffer;
 var uuid;
 var heartbeat;
 var runnerWorker;
+var serverIP = "http://52.7.238.54:8080";
 
 function pollTask() {
-  $.get("http://137.135.81.12:8080/current-task", function(data) {
+  $.get("http://52.7.238.54:8080/current-task", function(data) {
     if (data != "no tasks") {
       if (taskid == data){
         return;
@@ -36,7 +37,7 @@ function pollTask() {
 }
 
 function runJobCycle(runnerWorker) {
-  $.get("http://137.135.81.12:8080/fetch-job/"+taskid, function(data) {
+  $.get("http://52.7.238.54:8080/fetch-job/"+taskid, function(data) {
     if (data.success == false) {
       clearInterval(heartbeat);
       heartbeat = window.setInterval(pollTask, 5000);
@@ -49,7 +50,7 @@ function runJobCycle(runnerWorker) {
       console.log("sent buffer len"+taskbuffer.byteLength+" to worker");
       clearInterval(heartbeat);
       heartbeat = window.setInterval(function() {
-        $.get("http://137.135.81.12:8080/heartbeat/"+taskid +'/'+uuid, function(data) {
+        $.get("http://52.7.238.54:8080/heartbeat/"+taskid +'/'+uuid, function(data) {
           console.log(data);
         });
       }, 5000);
@@ -79,7 +80,7 @@ function createCORSRequest(method, url) {
 }
 
 function initHeap(progid, worker) {
-  xhr = createCORSRequest('GET','http://137.135.81.12:8080/get-memory/'+progid);
+  xhr = createCORSRequest('GET','http://52.7.238.54:8080/get-memory/'+progid);
   xhr.responseType = "arraybuffer";
   xhr.onload = function() {
     taskbuffer = xhr.response;
@@ -94,7 +95,7 @@ function initHeap(progid, worker) {
 // Make the actual CORS request.
 function makeCorsRequest(heap) {
   // All HTML5 Rocks properties support CORS.
-  var url = 'http://137.135.81.12:8080/send-result/'+taskid+'/'+uuid;
+  var url = 'http://52.7.238.54:8080/send-result/'+taskid+'/'+uuid;
 
   var xhr = createCORSRequest('POST', url);
   if (!xhr) {

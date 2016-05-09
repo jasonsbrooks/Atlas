@@ -140,16 +140,15 @@ app.get('/kmjs', function (req, res) {
 });
 
 app.get('/current-task', function (req, res) {
-  console.log("current task");
-  console.log(Object.keys(jobs));
   if (Object.keys(jobs).length == 0) return res.send("no tasks");
-  console.log(Object.keys(jobs)[0]);
   return res.send(Object.keys(jobs)[0]);
 });
+
 app.get('/fetch-job/:program_id', function (req, res) {
   if (!(req.params.program_id in jobs)) return res.json({'success':false});
   console.log("Jobs remaining: "+JSON.stringify(jobs[req.params.program_id].jobs));
   if (jobs[req.params.program_id].jobs.length == 0) return res.json({'success':false});
+  // TRY SENDING MULTIPLE JOBS HERE
   var job = jobs[req.params.program_id].jobs.pop();
   var uuid = guid();
   jobs[req.params.program_id].inProgress[uuid] = {'jobs': [job], 'lastSeen': new Date().getTime() / 1000};

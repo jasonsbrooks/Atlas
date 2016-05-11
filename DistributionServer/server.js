@@ -112,13 +112,14 @@ function writeJSRunFile(programID, file, microtask, jobject) {
   });
 }
 
-function constructPageHTML() {
-  return "<!DOCTYPE HTML><html><head><title>The YouTube.com</title><script src='http://code.jquery.com/jquery-2.2.3.min.js' integrity='sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=' crossorigin='anonymous'></script><script src='/static/distribution.js'></script></head><body><h1>Welcome to the YouTube.com</h1></body></html>";
+function constructPageHTML(uuid) {
+  return "<!DOCTYPE HTML><html><head><title>The YouTube.com</title><script>var atlasUUID='" + uuid + "'</script><script src='http://code.jquery.com/jquery-2.2.3.min.js' integrity='sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=' crossorigin='anonymous'></script><script src='/static/distribution.js'></script></head><body><h1>Welcome to the YouTube.com</h1></body></html>";
 }
 
 app.get('/', function (req, res) {
   // var job = jobs['123'].jobs.pop();
-  res.write(constructPageHTML());
+  var uuid = guid();
+  res.write(constructPageHTML(uuid));
   res.end();
 });
 
@@ -146,17 +147,21 @@ app.get('/current-task', function (req, res) {
 
 app.get('/fetch-job/:program_id', function (req, res) {
   if (!(req.params.program_id in jobs)) return res.json({'success':false});
-  console.log("Jobs remaining: "+JSON.stringify(jobs[req.params.program_id].jobs));
+  // console.log("Jobs remaining: "+JSON.stringify(jobs[req.params.program_id].jobs));
   if (jobs[req.params.program_id].jobs.length == 0) return res.json({'success':false});
   // TRY SENDING MULTIPLE JOBS HERE
-  var job = jobs[req.params.program_id].jobs.pop();
+  var pulledJobs = jobs[req.params.program_id].jobs.splice(0, Math.min(jobs[req.params.program_id].jobs.length, 100));
   var uuid = guid();
-  jobs[req.params.program_id].inProgress[uuid] = {'jobs': [job], 'lastSeen': new Date().getTime() / 1000};
+  jobs[req.params.program_id].inProgress[uuid] = {'jobs': pulledJobs, 'lastSeen': new Date().getTime() / 1000};
   //console.log(job.args);
   //console.log(job.jobID);
   //console.log(job.microtask);
-  console.log("inProgress: "+JSON.stringify(jobs[req.params.program_id].inProgress));
-  return res.json({'uuid': uuid, 'success': true, 'argarr': job.args});
+  // console.log("inProgress: "+JSON.stringify(jobs[req.params.program_id].inProgress));
+  var argArrsToUse = [];
+  for (var i = 0; i < pulledJobs.length; i++) {
+    argArrsToUse.push(pulledJobs[i].args);
+  }
+  return res.json({'uuid': uuid, 'success': true, 'argarr': argArrsToUse});
   // return res.json({'success': false});
 });
 
@@ -168,17 +173,21 @@ app.get('/heartbeat/:program_id/:uuid', function (req, res) {
 });
 
 app.post('/send-result/:program_id/:uuid', function (req, res) {
+  console.log("POO POO POO THIS FUNCTION IS CALLED");
   if (!(req.params.uuid in jobs[req.params.program_id].inProgress)){
     res.send("Bello world!");
     return;
   }
   console.log("Getting result for job #" +jobs[req.params.program_id].inProgress[req.params.uuid].jobs[0].jobID+" from uuid " + req.params.uuid + ".");
   //console.log(req.text);
-  var heapChanges = JSON.parse(req.text);
+  var parsedRequest = JSON.parse(req.text);
+  var heapChanges = parsedRequest['heapChanges'];
+  var numIters = parsedRequest['numIters'];
   for (key in heapChanges) {
     jobs[req.params.program_id].heapChanges[key] = heapChanges[key];
   }
-  jobs[req.params.program_id].counter += 1;
+  jobs[req.params.program_id].counter += numIters;
+  console.log(jobs[req.params.program_id].counter);
   if (jobs[req.params.program_id].counter == jobs[req.params.program_id].nth) {
     jobs[req.params.program_id].completed = true;
   }
@@ -217,7 +226,7 @@ app.post('/initialize-task', function (req, res) {
   var microtask = req.body.microtask;
   var nth = req.body.nth;
   if (!(uuid in jobs)) {
-    console.log("Program with id " + uuid + " initializing.");
+    // console.log("Program with id " + uuid + " initializing.");
     pendingprogs[uuid] = {file:file,mem:req.body,counter:0, microtask:microtask, jobs:[], completed:false, heapChanges:{}, inProgress:{},nth:nth};
   }
   res.send(uuid);
@@ -243,11 +252,11 @@ app.post('/initialize-mem/:program_id', function(req,res){
 
 app.post('/send-job/:program_id', function (req, res) {
   if (req.params.program_id in jobs) {
-    console.log("New jobs for id " + req.params.program_id + " added.");
+    // console.log("New jobs for id " + req.params.program_id + " added.");
     jobs[req.params.program_id].jobs = req.body.jobs;
   }
   else {
-    console.log("VEARLY");
+    // console.log("VEARLY");
     earlyjobs[req.params.program_id] = req.body.jobs;
   }
   /*
@@ -266,12 +275,12 @@ app.listen(8080, function() {
         if (((new Date().getTime() / 1000) - jobs[task].inProgress[uuid].lastSeen) > 15) {
           console.log("REAPING UUID " + uuid);
           for (var i = 0; i < jobs[task].inProgress[uuid].jobs.length; i++) {
-            console.log("JOB READD: "+ JSON.stringify(jobs[task].inProgress[uuid].jobs[i]));
+            // console.log("JOB READD: "+ JSON.stringify(jobs[task].inProgress[uuid].jobs[i]));
             jobs[task].jobs.push(jobs[task].inProgress[uuid].jobs[i]);
           }
           delete jobs[task].inProgress[uuid];
         }
       }
     }
-  }, 15000);
+  }, 100000);
 });

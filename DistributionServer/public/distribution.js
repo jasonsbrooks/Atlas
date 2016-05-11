@@ -1,7 +1,12 @@
 $(document).ready(function() {
+  // atlasUUID comes from a script tag in the head
+  console.log(atlasUUID);
   heartbeat = window.setInterval(pollTask, 500);
 });
 var taskid = -1;
+var currentArgArrs;
+var currentHeapChanges = {};
+var numIters;
 var taskbuffer;
 var uuid;
 var heartbeat;
@@ -12,9 +17,10 @@ function pollTask() {
   $.get("http://52.7.238.54:8080/current-task", function(data) {
     if (data != "no tasks") {
       if (taskid == data){
+        runJobCycle(runnerWorker);
         return;
       }
-      clearInterval(heartbeat);
+      // clearInterval(heartbeat);
       taskid = data;
       console.log("got new task: " + data);
       runnerWorker = new Worker("/static/tasks/"+taskid+".gz");
@@ -24,8 +30,28 @@ function pollTask() {
         $('body').append("<h2>Finished job with UUID " + uuid + "</h2>");
         $('body').append(e.data);
         console.log("message received from worker");
-        makeCorsRequest(e.data);
-        runJobCycle(runnerWorker);
+        var parsedResult = JSON.parse(e.data);
+        console.log(parsedResult);
+        for (item in parsedResult) {
+          currentHeapChanges[item] = parsedResult[item];
+        }
+
+        if (currentArgArrs.length > 0) {
+          $('body').append('<h3>Running the next job in the current set sent over.</h3>');
+          console.log("GOT HERE 1");
+          runnerWorker.postMessage(currentArgArrs.pop());
+        } else {
+          console.log("GOT HERE 2");
+          currentHeapChanges = {'numIters': numIters, 'heapChanges': currentHeapChanges};
+          console.log(JSON.stringify(currentHeapChanges));
+          makeCorsRequest(JSON.stringify(currentHeapChanges));
+          $('body').append('<h3>Getting new jobs because none left in current batch.</h3>');
+          currentHeapChanges = {};
+          currentArgArrs = [];
+          numIters = 0;
+          runJobCycle(runnerWorker);
+          return;
+        }
       }
       initHeap(taskid,runnerWorker);
     }
@@ -54,7 +80,9 @@ function runJobCycle(runnerWorker) {
           console.log(data);
         });
       }, 5000);
-      runnerWorker.postMessage(data.argarr);
+      currentArgArrs = data.argarr;
+      numIters = currentArgArrs.length;
+      runnerWorker.postMessage(currentArgArrs.pop());
     }
   });
 }
@@ -107,6 +135,8 @@ function makeCorsRequest(heap) {
   xhr.onload = function() {
     var text = xhr.responseText;
     console.log(text);
+    clearInterval(heartbeat);
+    heartbeat = window.setInterval(pollTask, 5000);
   };
 
   xhr.onerror = function() {
